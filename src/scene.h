@@ -86,10 +86,22 @@ class OurTestScene : public Scene
 	Camera* m_camera;
 
 	Model* m_quad;
+	Model* m_cube;
 	Model* m_sponza;
 
 	mat4f m_sponza_transform;
 	mat4f m_quad_transform;
+	mat4f m_cube_transform;
+
+	//solar system models
+	Model* m_sun;
+	Model* m_earth;
+	Model* m_moon;
+
+	//solar system transforms
+	mat4f m_sun_transform;
+	mat4f m_earth_transform;
+	mat4f m_moon_transform;
 
 	mat4f m_view_matrix;
 	mat4f m_projection_matrix;
@@ -98,6 +110,8 @@ class OurTestScene : public Scene
 	float m_angle = 0;			// A per-frame updated rotation angle (radians)...
 	float m_angular_velocity = fPI / 2;	// ...and its velocity (radians/sec)
 	float m_camera_velocity = 5.0f;	// Camera movement velocity in units/s
+	float m_camera_sensitivity = 0.005f;
+	bool m_inverted_camera = true;
 	float m_fps_cooldown = 0;
 
 	void InitTransformationBuffer();

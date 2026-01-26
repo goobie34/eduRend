@@ -37,12 +37,24 @@ public:
 	 * @param[in] direction Direction to move along
 	*/
 	void Move(const linalg::vec3f& direction) noexcept;
+	
+	/**
+	 * @brief Rotate the camera around x and y axis
+	 * @param[in] rotation Rotation along x and y axis
+	*/
+	void Rotate(const linalg::vec2f& rotation) noexcept;
 
 	/**
 	 * @brief Changes the camera aspect ratio.
 	 * @param[in] aspect_ratio New aspect ratio, calculate with width / height
 	*/
 	inline void SetAspect(float aspect_ratio) noexcept { m_aspect_ratio = aspect_ratio; }
+
+	/**
+	 * @brief Get the local rotation matrix for the camera.
+	 * @return Local rotation matrix.
+	*/
+	linalg::mat4f RotationMatrix() const noexcept;
 
 	/**
 	 * @brief Get the World-to-View matrix of the camera.
@@ -73,6 +85,7 @@ private:
 	float m_far_plane;
 
 	linalg::vec3f m_position;
+	linalg::vec2f m_rotation; //(pitch, yaw)
 };
 
 #endif

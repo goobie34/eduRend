@@ -1,6 +1,7 @@
 
 #include "Scene.h"
 #include "QuadModel.h"
+#include "cube.h"
 #include "OBJModel.h"
 
 Scene::Scene(
@@ -49,7 +50,13 @@ void OurTestScene::Init()
 
 	// Create objects
 	m_quad = new QuadModel(m_dxdevice, m_dxdevice_context);
+	m_cube = new Cube(m_dxdevice, m_dxdevice_context);
 	m_sponza = new OBJModel("assets/crytek-sponza/sponza.obj", m_dxdevice, m_dxdevice_context);
+	
+	//Solar system model objects
+	m_sun = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
+	m_earth = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
+	m_moon = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
 }
 
 //
@@ -76,15 +83,43 @@ void OurTestScene::Update(
 	if(input_handler.IsKeyPressed(Keys::Esc))
 		PostQuitMessage(0);
 
+	//rotate camera
+	linalg:vec2f mouse_delta_xy = {
+		static_cast<float>(input_handler.GetMouseDeltaX()),
+		static_cast<float>(input_handler.GetMouseDeltaY())};
+
+	m_camera->Rotate(mouse_delta_xy * m_camera_sensitivity * (m_inverted_camera ? -1.0f : 1.0f));
+
 	// Now set/update object transformations
 	// This can be done using any sequence of transformation matrices,
 	// but the T*R*S order is most common; i.e. scale, then rotate, and then translate.
 	// If no transformation is desired, an identity matrix can be obtained 
 	// via e.g. Mquad = linalg::mat4f_identity; 
 
+	//Solar system transformations
+	m_sun_transform = mat4f::translation(0, 10, -7) *
+		mat4f::rotation(-m_angle, 0.0f, 0.0f, 1.0f) * 
+		mat4f::scaling(1, 1, 1);
+
+	m_earth_transform = m_sun_transform *
+		(mat4f::translation(3.5, 0, 0) *
+		mat4f::rotation(-m_angle, 0.0f, 0.0f, 1.0f) *
+		mat4f::scaling(0.5, 0.5, 0.5));
+	
+	m_moon_transform = m_earth_transform *
+		(mat4f::translation(2.5, 0, 0) *
+		mat4f::rotation(0, 0.0f, 0.0f, 0.0f) *
+		mat4f::scaling(0.25, 0.25, 0.25));
+
 	// Quad model-to-world transformation
 	m_quad_transform = mat4f::translation(0, 0, 0) *			// No translation
 		mat4f::rotation(-m_angle, 0.0f, 1.0f, 0.0f) *	// Rotate continuously around the y-axis
+		mat4f::scaling(1.5, 1.5, 1.5);				// Scale uniformly to 150%
+	
+	// Cube model-to-world transformation
+	m_cube_transform = mat4f::translation(0, 0, 0) *			// No translation
+		mat4f::rotation(-m_angle, 0.0f, 1.0f, 0.0f) *	// Rotate continuously around the y-axis
+		//mat4f::rotation(-m_angle, 1.0f, 0.0f, 0.0f) *	// Rotate continuously around the y-axis
 		mat4f::scaling(1.5, 1.5, 1.5);				// Scale uniformly to 150%
 
 	// Sponza model-to-world transformation
@@ -117,18 +152,37 @@ void OurTestScene::Render()
 	m_view_matrix = m_camera->WorldToViewMatrix();
 	m_projection_matrix = m_camera->ProjectionMatrix();
 
-	// Load matrices + the Quad's transformation to the device and render it
-	UpdateTransformationBuffer(m_quad_transform, m_view_matrix, m_projection_matrix);
-	m_quad->Render();
+	//// Load matrices + the Quad's transformation to the device and render it
+	//UpdateTransformationBuffer(m_quad_transform, m_view_matrix, m_projection_matrix);
+	//m_quad->Render();
+
+	// Load matrices + the cube's transformation to the device and render it
+	UpdateTransformationBuffer(m_cube_transform, m_view_matrix, m_projection_matrix);
+	m_cube->Render();
 
 	// Load matrices + Sponza's transformation to the device and render it
 	UpdateTransformationBuffer(m_sponza_transform, m_view_matrix, m_projection_matrix);
 	m_sponza->Render();
+
+	// Solar system render
+	UpdateTransformationBuffer(m_sun_transform, m_view_matrix, m_projection_matrix);
+	m_sun->Render();
+
+	UpdateTransformationBuffer(m_earth_transform, m_view_matrix, m_projection_matrix);
+	m_earth->Render();
+
+	UpdateTransformationBuffer(m_moon_transform, m_view_matrix, m_projection_matrix);
+	m_moon->Render();
 }
 
 void OurTestScene::Release()
 {
+	SAFE_DELETE(m_sun);
+	SAFE_DELETE(m_earth);
+	SAFE_DELETE(m_moon);
+
 	SAFE_DELETE(m_quad);
+	SAFE_DELETE(m_cube);
 	SAFE_DELETE(m_sponza);
 	SAFE_DELETE(m_camera);
 
