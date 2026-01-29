@@ -135,8 +135,7 @@ Cube::Cube(
 	dxdevice->CreateBuffer(&indexbufferDesc, &indexData, &m_index_buffer);
 	SETNAME(m_index_buffer, "IndexBuffer");
 
-	m_number_of_indices = (unsigned int)indices.size(
-	);
+	m_number_of_indices = (unsigned int)indices.size();
 }
 
 void Cube::Render() const

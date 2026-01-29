@@ -14,8 +14,8 @@ struct PSIn
 
 float4 PS_main(PSIn input) : SV_Target
 {
-    float lambert = (dot(input.Normal, normalize(float3(0.5, 0.5, 1))) + 1)/2;
-    float halfLambert = (dot(input.Normal, normalize(float3(0.5, 0.5, 1))));
+    //float lambert = (dot(input.Normal, normalize(float3(0.5, 0.5, 1))) + 1) / 2;
+    //float halfLambert = (dot(input.Normal, normalize(float3(0.5, 0.5, 1))));
 	
     //return float4(lambert, lambert, lambert, 1);
     //return float4(halfLambert, halfLambert, halfLambert, 1);

@@ -23,9 +23,8 @@ public:
 	 * @param[in] near_plane Near plane distance.
 	 * @param[in] far_plane Far plane distance, must be larger than the near plane.
 	*/
-	inline constexpr Camera(float vertical_fov, float aspect_ratio, float near_plane, float far_plane) noexcept 
-		: m_vertical_fov(vertical_fov), m_aspect_ratio(aspect_ratio), m_near_plane(near_plane), m_far_plane(far_plane), m_position(0.0f) {}
-
+	inline constexpr Camera(float vertical_fov, float aspect_ratio, float near_plane, float far_plane) noexcept
+		: m_vertical_fov(vertical_fov), m_aspect_ratio(aspect_ratio), m_near_plane(near_plane), m_far_plane(far_plane), m_position(0.0f) { }
 	/**
 	 * @brief Move the camera to a new position
 	 * @param[in] position New position for the camera
@@ -51,6 +50,13 @@ public:
 	inline void SetAspect(float aspect_ratio) noexcept { m_aspect_ratio = aspect_ratio; }
 
 	/**
+	 * @brief Sets camera rotation constraints for pitch (up/down).
+	 * @param[in] constraint_up Max angle camera can look up
+	 * @param[in] constraint_down Lowest angle camera can look down
+	*/
+	//inline void SetRotationConstraints(float constraint_up, float constraint_down) noexcept { m_rot_constraint_up = constraint_up; m_rot_constraint_down  = constraint_down; }
+
+	/**
 	 * @brief Get the local rotation matrix for the camera.
 	 * @return Local rotation matrix.
 	*/
@@ -61,6 +67,12 @@ public:
 	 * @return World-to-View matrix.
 	*/
 	linalg::mat4f WorldToViewMatrix() const noexcept;
+
+	/**
+	 * @brief Get the View-to-World matrix of the camera.
+	 * @return View-to-World matrix.
+	*/
+	linalg::mat4f ViewToWorldMatrix() const noexcept;
 
 	/**
 	 * @brief get the Matrix transforming from View space to Clip space
@@ -86,6 +98,8 @@ private:
 
 	linalg::vec3f m_position;
 	linalg::vec2f m_rotation; //(pitch, yaw)
+	//float m_rot_constraint_up;
+	//float m_rot_constraint_down;
 };
 
 #endif

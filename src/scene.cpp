@@ -103,7 +103,7 @@ void OurTestScene::Update(
 
 	m_earth_transform = m_sun_transform *
 		(mat4f::translation(3.5, 0, 0) *
-		mat4f::rotation(-m_angle, 0.0f, 0.0f, 1.0f) *
+		mat4f::rotation(-m_angle, 0.0f, 1.0f, 0.0f) *
 		mat4f::scaling(0.5, 0.5, 0.5));
 	
 	m_moon_transform = m_earth_transform *
