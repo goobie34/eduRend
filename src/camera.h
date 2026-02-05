@@ -39,10 +39,18 @@ public:
 	
 	/**
 	 * @brief Rotate the camera around x and y axis
-	 * @param[in] rotation Rotation along x and y axis
+	 * @param[in] rotation Rotation around x and y axis
 	*/
 	void Rotate(const linalg::vec2f& rotation) noexcept;
 
+	/**
+	 * @brief Rotate the camera around x and y axis with constraints on pitch
+	 * @param[in] rotation Rotation around x and y axis
+	 * @param[in] constraint_upper Upper constraint of rotation around x axis
+	 * @param[in] constraint_upper Lower constraint of rotation around x axis
+	*/
+	void RotateWithConstraint(const linalg::vec2f& rotation, const float constraint_upper, const float constraint_lower) noexcept;
+	
 	/**
 	 * @brief Changes the camera aspect ratio.
 	 * @param[in] aspect_ratio New aspect ratio, calculate with width / height
@@ -55,7 +63,7 @@ public:
 	 * @param[in] constraint_down Lowest angle camera can look down
 	*/
 	//inline void SetRotationConstraints(float constraint_up, float constraint_down) noexcept { m_rot_constraint_up = constraint_up; m_rot_constraint_down  = constraint_down; }
-
+	
 	/**
 	 * @brief Get the local rotation matrix for the camera.
 	 * @return Local rotation matrix.
@@ -98,8 +106,6 @@ private:
 
 	linalg::vec3f m_position;
 	linalg::vec2f m_rotation; //(pitch, yaw)
-	//float m_rot_constraint_up;
-	//float m_rot_constraint_down;
 };
 
 #endif

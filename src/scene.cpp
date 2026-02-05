@@ -67,15 +67,24 @@ void OurTestScene::Update(
 	float dt,
 	const InputHandler& input_handler)
 {
-	// Basic camera control
+	//converting camera direction vectors to world space
+	vec4f cam_forward_local_homogenous = { 0, 0, -1, 0};
+	vec4f cam_forward_world_homogenous = m_camera->ViewToWorldMatrix() * cam_forward_local_homogenous;
+	vec3f cam_forward_world = { cam_forward_world_homogenous.x, cam_forward_world_homogenous.y, cam_forward_world_homogenous.z };
+	
+	vec4f cam_right_local_homogenous = { 1, 0, 0, 0};
+	vec4f cam_right_world_homogenous = m_camera->ViewToWorldMatrix() * cam_right_local_homogenous;
+	vec3f cam_right_world = { cam_right_world_homogenous.x, cam_right_world_homogenous.y, cam_right_world_homogenous.z };
+
+	// Camera control
 	if (input_handler.IsKeyPressed(Keys::Up) || input_handler.IsKeyPressed(Keys::W))
-		m_camera->Move({ 0.0f, 0.0f, -m_camera_velocity * dt });
+		m_camera->Move(cam_forward_world * m_camera_velocity * dt);
 	if (input_handler.IsKeyPressed(Keys::Down) || input_handler.IsKeyPressed(Keys::S))
-		m_camera->Move({ 0.0f, 0.0f, m_camera_velocity * dt });
+		m_camera->Move(cam_forward_world * -m_camera_velocity * dt);
 	if (input_handler.IsKeyPressed(Keys::Right) || input_handler.IsKeyPressed(Keys::D))
-		m_camera->Move({ m_camera_velocity * dt, 0.0f, 0.0f });
+		m_camera->Move(cam_right_world * m_camera_velocity * dt);
 	if (input_handler.IsKeyPressed(Keys::Left) || input_handler.IsKeyPressed(Keys::A))
-		m_camera->Move({ -m_camera_velocity * dt, 0.0f, 0.0f });
+		m_camera->Move(cam_right_world * -m_camera_velocity * dt);
 	if(input_handler.IsKeyPressed(Keys::Space))
 		m_camera->Move({ 0.0f, m_camera_velocity * dt, 0.0f });
 	if(input_handler.IsKeyPressed(Keys::LCtrl))
@@ -88,7 +97,8 @@ void OurTestScene::Update(
 		static_cast<float>(input_handler.GetMouseDeltaX()),
 		static_cast<float>(input_handler.GetMouseDeltaY())};
 
-	m_camera->Rotate(mouse_delta_xy * m_camera_sensitivity * (m_inverted_camera ? -1.0f : 1.0f));
+	//m_camera->Rotate(mouse_delta_xy * m_camera_sensitivity * (m_inverted_camera ? -1.0f : 1.0f));
+	m_camera->RotateWithConstraint(mouse_delta_xy * m_camera_sensitivity * (m_inverted_camera ? -1.0f : 1.0f), m_camera_pitch_angle, -m_camera_pitch_angle);
 
 	// Now set/update object transformations
 	// This can be done using any sequence of transformation matrices,

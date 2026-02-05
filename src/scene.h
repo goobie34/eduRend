@@ -111,6 +111,7 @@ class OurTestScene : public Scene
 	float m_angular_velocity = fPI / 2;	// ...and its velocity (radians/sec)
 	float m_camera_velocity = 5.0f;	// Camera movement velocity in units/s
 	float m_camera_sensitivity = 0.005f;
+	float m_camera_pitch_angle = 3.141592653 / 2; //how much camera can look up or down (in radians).  pi / 2 rad = 90 deg
 	bool m_inverted_camera = true;
 	float m_fps_cooldown = 0;
 
