@@ -106,6 +106,9 @@ void OBJModel::Render() const
 		m_dxdevice_context->PSSetShaderResources(0, 1, &material.DiffuseTexture.TextureView);
 		// + bind other textures here, e.g. a normal map, to appropriate slots
 
+		UpdateMaterialBuffer(vec4f(material.AmbientColour, 1), vec4f(material.DiffuseColour, 1), vec4f(material.SpecularColour, 1));
+		m_dxdevice_context->PSSetConstantBuffers(1, 1, &m_material_buffer);
+
 		// Make the drawcall
 		m_dxdevice_context->DrawIndexed(indexRange.Size, indexRange.Start, 0);
 	}

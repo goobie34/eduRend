@@ -90,6 +90,8 @@ public:
 	*/
 	linalg::mat4f ProjectionMatrix() const noexcept;
 
+	linalg::vec3f Position() const noexcept;
+
 private:
 	// Aperture attributes
 	float m_vertical_fov;

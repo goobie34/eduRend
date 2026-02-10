@@ -23,7 +23,7 @@ class OBJModel : public Model
 	};
 
 	std::vector<IndexRange> m_index_ranges;
-	std::vector<Material> m_materials;
+	//std::vector<Material> m_materials;
 
 	void append_materials(const std::vector<Material>& mtl_vec)
 	{

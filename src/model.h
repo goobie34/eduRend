@@ -15,6 +15,7 @@
 #include "Drawcall.h"
 #include "OBJLoader.h"
 #include "Texture.h"
+#include "buffers.h"
 
 using namespace linalg;
 
@@ -32,6 +33,13 @@ protected:
 	ID3D11Buffer* m_vertex_buffer = nullptr; //!< Pointer to gpu side vertex buffer
 	ID3D11Buffer* m_index_buffer = nullptr; //!< Pointer to gpu side index buffer
 
+	//Pointer to material buffer for this model
+	ID3D11Buffer* m_material_buffer = nullptr; //!< Pointer to gpu side material buffer
+	std::vector<Material> m_materials;
+	
+	void InitMaterialBuffer();
+	void UpdateMaterialBuffer(vec4f ambient, vec4f diffuse, vec4f specular) const;
+
 public:
 
 	/**
@@ -39,8 +47,10 @@ public:
 	 * @param dxdevice ID3D11Device to be used in the model.
 	 * @param dxdevice_context ID3D11DeviceContext to be used in the model.
 	*/
-	Model(ID3D11Device* dxdevice, ID3D11DeviceContext* dxdevice_context) 
-		:	m_dxdevice(dxdevice), m_dxdevice_context(dxdevice_context) { }
+	Model(ID3D11Device* dxdevice, ID3D11DeviceContext* dxdevice_context)
+		: m_dxdevice(dxdevice), m_dxdevice_context(dxdevice_context) {
+		InitMaterialBuffer();
+	}
 
 	/**
 	 * @brief Abstract render method: must be implemented by derived classes
@@ -55,6 +65,7 @@ public:
 	{ 
 		SAFE_RELEASE(m_vertex_buffer);
 		SAFE_RELEASE(m_index_buffer);
+		SAFE_RELEASE(m_material_buffer);
 	}
 };
 

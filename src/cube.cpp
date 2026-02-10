@@ -5,6 +5,11 @@ Cube::Cube(
 	ID3D11DeviceContext* dxdevice_context)
 	: Model(dxdevice, dxdevice_context)
 {
+	m_materials.push_back(DefaultMaterial);
+	m_materials[0].AmbientColour = { 0, 0, 0 };
+	m_materials[0].DiffuseColour = { 0, 0, 1 };
+	m_materials[0].SpecularColour = { 1, 1, 1 };
+
 	std::vector<Vertex> vertices;
 	std::vector<unsigned> indices;
 
@@ -49,10 +54,11 @@ Cube::Cube(
 
 	//Array of texture coordinates for each corner of cube face
 	vec2f corner_tex_coords[4] = {{0,0}, {0,1}, {1, 1}, {1, 0}};
+	vec3f normals[6] = { {0,0, 1}, {1,0,0}, {0, 0, -1}, {-1,0 ,0}, {0, 1, 0}, {0, -1, 0} }; //order of normals for: front, right, back, left, top, bottom
 
 	//Set normals and texture coordinates, then add to vertex buffer
 	for (int i = 0; i < 24; i++) {
-		v[i].Normal = { 0, 0, 1 };
+		v[i].Normal = normals[(int)(i / 4)]; //first four verteces get normals[0], next four get normals[1] and so on
 		v[i].TexCoord = corner_tex_coords[i % 4]; //ensures that corners of cube a face matches corner of texture space
 		vertices.push_back(v[i]);
 	}
@@ -147,6 +153,10 @@ void Cube::Render() const
 
 	// Bind our index buffer
 	m_dxdevice_context->IASetIndexBuffer(m_index_buffer, DXGI_FORMAT_R32_UINT, 0);
+	
+	//Update and bind material buffer
+	UpdateMaterialBuffer(vec4f(m_materials[0].AmbientColour, 1), vec4f(m_materials[0].DiffuseColour, 1), vec4f(m_materials[0].SpecularColour, 1));
+	m_dxdevice_context->PSSetConstantBuffers(1, 1, &m_material_buffer);
 
 	// Make the drawcall
 	m_dxdevice_context->DrawIndexed(m_number_of_indices, 0, 0);

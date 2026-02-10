@@ -32,6 +32,7 @@ OurTestScene::OurTestScene(
 { 
 	InitTransformationBuffer();
 	// + init other CBuffers
+	InitLightCamBuffer();
 }
 
 //
@@ -48,13 +49,17 @@ void OurTestScene::Init()
 	// Move camera to (0,0,5)
 	m_camera->MoveTo({ 0, 0, 5 });
 
+	//Create light sources
+	m_light_pos = { 0, 0,-4 };
+
 	// Create objects
 	m_quad = new QuadModel(m_dxdevice, m_dxdevice_context);
 	m_cube = new Cube(m_dxdevice, m_dxdevice_context);
 	m_sponza = new OBJModel("assets/crytek-sponza/sponza.obj", m_dxdevice, m_dxdevice_context);
 	
 	//Solar system model objects
-	m_sun = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
+	//m_sun = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
+	m_sun = new OBJModel("assets/carbody/carbody.obj", m_dxdevice, m_dxdevice_context);
 	m_earth = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
 	m_moon = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
 }
@@ -91,6 +96,22 @@ void OurTestScene::Update(
 		m_camera->Move({ 0.0f, -m_camera_velocity * dt, 0.0f });
 	if(input_handler.IsKeyPressed(Keys::Esc))
 		PostQuitMessage(0);
+
+	//light animation
+	if (m_light_pos.x < -m_light_anim_range) {
+		m_light_speed *= -1;
+		m_light_pos.x = -m_light_anim_range;
+	}
+	else if (m_light_pos.x > m_light_anim_range) {
+		m_light_speed *= -1;
+		m_light_pos.x = m_light_anim_range;
+	}
+	else {
+		m_light_pos.x += m_light_speed * dt;
+	}
+
+	std::cout << m_light_pos << std::endl;
+
 
 	//rotate camera
 	linalg:vec2f mouse_delta_xy = {
@@ -129,7 +150,6 @@ void OurTestScene::Update(
 	// Cube model-to-world transformation
 	m_cube_transform = mat4f::translation(0, 0, 0) *			// No translation
 		mat4f::rotation(-m_angle, 0.0f, 1.0f, 0.0f) *	// Rotate continuously around the y-axis
-		//mat4f::rotation(-m_angle, 1.0f, 0.0f, 0.0f) *	// Rotate continuously around the y-axis
 		mat4f::scaling(1.5, 1.5, 1.5);				// Scale uniformly to 150%
 
 	// Sponza model-to-world transformation
@@ -157,6 +177,9 @@ void OurTestScene::Render()
 {
 	// Bind transformation_buffer to slot b0 of the VS
 	m_dxdevice_context->VSSetConstantBuffers(0, 1, &m_transformation_buffer);
+	m_dxdevice_context->PSSetConstantBuffers(0, 1, &m_lightcam_buffer);
+
+	UpdateLightCamBuffer(vec4f(m_camera->Position(), 1), vec4f(m_light_pos, 1));
 
 	// Obtain the matrices needed for rendering from the camera
 	m_view_matrix = m_camera->WorldToViewMatrix();
@@ -198,6 +221,8 @@ void OurTestScene::Release()
 
 	SAFE_RELEASE(m_transformation_buffer);
 	// + release other CBuffers
+
+	SAFE_RELEASE(m_lightcam_buffer);
 }
 
 void OurTestScene::OnWindowResized(
@@ -223,6 +248,19 @@ void OurTestScene::InitTransformationBuffer()
 	ASSERT(hr = m_dxdevice->CreateBuffer(&matrixBufferDesc, nullptr, &m_transformation_buffer));
 }
 
+void OurTestScene::InitLightCamBuffer()
+{
+	HRESULT hr;
+	D3D11_BUFFER_DESC lightCamBufferDesc = { 0 };
+	lightCamBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	lightCamBufferDesc.ByteWidth = sizeof(LightCamBuffer);
+	lightCamBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	lightCamBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	lightCamBufferDesc.MiscFlags = 0;
+	lightCamBufferDesc.StructureByteStride = 0;
+	ASSERT(hr = m_dxdevice->CreateBuffer(&lightCamBufferDesc, nullptr, &m_lightcam_buffer));
+}
+
 void OurTestScene::UpdateTransformationBuffer(
 	mat4f ModelToWorldMatrix,
 	mat4f WorldToViewMatrix,
@@ -236,4 +274,17 @@ void OurTestScene::UpdateTransformationBuffer(
 	matrixBuffer->WorldToViewMatrix = WorldToViewMatrix;
 	matrixBuffer->ProjectionMatrix = ProjectionMatrix;
 	m_dxdevice_context->Unmap(m_transformation_buffer, 0);
+}
+
+void OurTestScene::UpdateLightCamBuffer(
+	vec4f camera_position,
+	vec4f light_position)
+{
+	// Map the resource buffer, obtain a pointer and then write our matrices to it
+	D3D11_MAPPED_SUBRESOURCE resource;
+	m_dxdevice_context->Map(m_lightcam_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+	LightCamBuffer* lightCamBuffer = (LightCamBuffer*)resource.pData;
+	lightCamBuffer->CameraPosition = camera_position;
+	lightCamBuffer->LightPosition = light_position;
+	m_dxdevice_context->Unmap(m_lightcam_buffer, 0);
 }

@@ -79,11 +79,16 @@ class OurTestScene : public Scene
 	// CBuffer for transformation matrices
 	ID3D11Buffer* m_transformation_buffer = nullptr;
 	// + other CBuffers
+	ID3D11Buffer* m_lightcam_buffer = nullptr;
+
 
 	//
 	// Scene content
 	//
 	Camera* m_camera;
+
+	//Light sources
+	vec3f m_light_pos;
 
 	Model* m_quad;
 	Model* m_cube;
@@ -109,15 +114,21 @@ class OurTestScene : public Scene
 	// Misc
 	float m_angle = 0;			// A per-frame updated rotation angle (radians)...
 	float m_angular_velocity = fPI / 2;	// ...and its velocity (radians/sec)
-	float m_camera_velocity = 5.0f;	// Camera movement velocity in units/s
+	float m_camera_velocity = 7;	// Camera movement velocity in units/s
 	float m_camera_sensitivity = 0.005f;
 	float m_camera_pitch_angle = 3.141592653 / 2; //how much camera can look up or down (in radians).  pi / 2 rad = 90 deg
 	bool m_inverted_camera = true;
 	float m_fps_cooldown = 0;
 
+	//camera animation
+	float m_light_speed = 6.0f;
+	float m_light_anim_range = 20.0f;
+
 	void InitTransformationBuffer();
+	void InitLightCamBuffer();
 
 	void UpdateTransformationBuffer(mat4f model_to_world_matrix, mat4f world_to_view_matrix, mat4f projection_matrix);
+	void UpdateLightCamBuffer(vec4f camera_position, vec4f light_position);
 
 public:
 	/**

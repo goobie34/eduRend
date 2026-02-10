@@ -202,6 +202,7 @@
     <ClCompile Include="src\camera.cpp" />
     <ClCompile Include="src\inputhandler.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\model.cpp" />
     <ClCompile Include="src\objloader.cpp" />
     <ClCompile Include="src\objmodel.cpp" />
     <ClCompile Include="src\quadmodel.cpp" />
