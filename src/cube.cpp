@@ -6,9 +6,22 @@ Cube::Cube(
 	: Model(dxdevice, dxdevice_context)
 {
 	m_materials.push_back(DefaultMaterial);
+	m_materials[0].Name = "Cube Material";
 	m_materials[0].AmbientColour = { 0, 0, 0 };
-	m_materials[0].DiffuseColour = { 0, 0, 1 };
+	m_materials[0].DiffuseColour = { 0, 0, 0 };
 	m_materials[0].SpecularColour = { 1, 1, 1 };
+	m_materials[0].DiffuseTextureFilename = "assets/textures/crate.png";
+
+	if (m_materials[0].DiffuseTextureFilename.size()) {
+
+		HRESULT hr = LoadTextureFromFile(
+			dxdevice,
+			dxdevice_context,
+			m_materials[0].DiffuseTextureFilename.c_str(),
+			&m_materials[0].DiffuseTexture);
+		std::cout << "\t" << m_materials[0].DiffuseTextureFilename
+			<< (SUCCEEDED(hr) ? " - OK" : "- FAILED") << std::endl;
+	}
 
 	std::vector<Vertex> vertices;
 	std::vector<unsigned> indices;
@@ -154,10 +167,21 @@ void Cube::Render() const
 	// Bind our index buffer
 	m_dxdevice_context->IASetIndexBuffer(m_index_buffer, DXGI_FORMAT_R32_UINT, 0);
 	
+	m_dxdevice_context->PSSetShaderResources(0, 1, &m_materials[0].DiffuseTexture.TextureView);
+
 	//Update and bind material buffer
 	UpdateMaterialBuffer(vec4f(m_materials[0].AmbientColour, 1), vec4f(m_materials[0].DiffuseColour, 1), vec4f(m_materials[0].SpecularColour, 1));
 	m_dxdevice_context->PSSetConstantBuffers(1, 1, &m_material_buffer);
 
 	// Make the drawcall
 	m_dxdevice_context->DrawIndexed(m_number_of_indices, 0, 0);
+}
+
+Cube::~Cube(){
+	for (auto& material : m_materials)
+	{
+		SAFE_RELEASE(material.DiffuseTexture.TextureView);
+
+		// Release other used textures ...
+	}
 }

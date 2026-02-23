@@ -81,6 +81,8 @@ class OurTestScene : public Scene
 	// + other CBuffers
 	ID3D11Buffer* m_lightcam_buffer = nullptr;
 
+	ID3D11SamplerState* m_sampler_state;
+
 
 	//
 	// Scene content
@@ -123,6 +125,8 @@ class OurTestScene : public Scene
 	//camera animation
 	float m_light_speed = 6.0f;
 	float m_light_anim_range = 20.0f;
+
+	void InitSamplerState();
 
 	void InitTransformationBuffer();
 	void InitLightCamBuffer();

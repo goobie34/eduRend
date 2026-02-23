@@ -33,6 +33,7 @@ OurTestScene::OurTestScene(
 	InitTransformationBuffer();
 	// + init other CBuffers
 	InitLightCamBuffer();
+	InitSamplerState();
 }
 
 //
@@ -223,6 +224,7 @@ void OurTestScene::Release()
 	// + release other CBuffers
 
 	SAFE_RELEASE(m_lightcam_buffer);
+	SAFE_RELEASE(m_sampler_state);
 }
 
 void OurTestScene::OnWindowResized(
@@ -233,6 +235,23 @@ void OurTestScene::OnWindowResized(
 		m_camera->SetAspect(float(new_width) / new_height);
 
 	Scene::OnWindowResized(new_width, new_height);
+}
+
+void OurTestScene::InitSamplerState() {
+	D3D11_SAMPLER_DESC sampler_desc = {
+		D3D11_FILTER_MIN_MAG_MIP_LINEAR, // Filter
+		D3D11_TEXTURE_ADDRESS_MIRROR, // AddressU
+		D3D11_TEXTURE_ADDRESS_MIRROR, // AddressV
+		D3D11_TEXTURE_ADDRESS_CLAMP, // AddressW
+		0.0f, // MipLODBias
+		1, // MaxAnisotropy
+		D3D11_COMPARISON_NEVER, // ComapirsonFunc
+		{ 1.0f, 1.0f, 1.0f, 1.0f }, // BorderColor
+		-FLT_MAX, // MinLOD
+		FLT_MAX // MaxLOD
+	};
+	m_dxdevice->CreateSamplerState(&sampler_desc, &m_sampler_state);
+	m_dxdevice_context->PSSetSamplers(0, 1, &m_sampler_state);
 }
 
 void OurTestScene::InitTransformationBuffer()

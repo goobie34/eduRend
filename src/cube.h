@@ -10,7 +10,7 @@ public:
 	virtual void Render() const;
 	
 	//Destructor
-	~Cube() {}
+	~Cube();
 
 };
 

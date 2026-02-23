@@ -1,4 +1,5 @@
 Texture2D texDiffuse : register(t0);
+SamplerState texSampler: register(s0);
 
 cbuffer LightCamBuffer : register(b0)
 {
@@ -43,9 +44,15 @@ float4 PS_main(PSIn input) : SV_Target
     //float4 ambient = float4(0, 0, 0, 1); //black
     //float4 diffuse = float4(1, 0, 0, 1); //red
     
+    float4 diffuseTexture = texDiffuse.Sample(texSampler, input.TexCoord);
+    //return diffuseTexture;
+    
     //phong shading 
-    float4 ambient = Ambient;
-    float4 diffuse = Diffuse * max(dot(normal, lightdir), 0);
+    //float4 ambient = Ambient;
+    float4 ambient = diffuseTexture;
+    //float4 ambient = float4(0, 0, 0, 1);
+    //float4 diffuse = Diffuse * max(dot(normal, lightdir), 0);
+    float4 diffuse = diffuseTexture * max(dot(normal, lightdir), 0);
     float4 specular = Specular * max(pow(abs(dot(reflection, cameradir)), shininess), 0);
     float4 phong = ambient + diffuse + specular;
     return float4(phong.xyz * intensity, phong.w);

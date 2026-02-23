@@ -72,6 +72,7 @@ OBJModel::OBJModel(
 
 			hr = LoadTextureFromFile(
 				dxdevice,
+				dxdevice_context,
 				material.DiffuseTextureFilename.c_str(),
 				&material.DiffuseTexture);
 			std::cout << "\t" << material.DiffuseTextureFilename
