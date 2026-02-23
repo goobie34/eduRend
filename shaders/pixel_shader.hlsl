@@ -27,26 +27,28 @@ struct PSIn
 
 float4 PS_main(PSIn input) : SV_Target
 {
-    float3 lightdir = normalize(LightPosition.xyz - input.PosWorld);
-    //float3 lightdir = normalize(float3(0.5, 0.5, 1));
-    float3 normal = normalize(input.Normal);
-    
-    float3 cameradir = normalize(CameraPosition.xyz - input.PosWorld);
-    float3 reflection = reflect(-lightdir, normal);
+    float3 lightdir = normalize(LightPosition.xyz - input.PosWorld);    //from object --> light
+    float3 cameradir = normalize(CameraPosition.xyz - input.PosWorld);  //from object --> camera    
+    float3 normal = normalize(input.Normal);                            //object surface normal
+  
+    float3 reflection = reflect(-lightdir, normal); //vector for reflecting light in the object
     //float3 reflection = lightdir - 2 * mul(dot(lightdir, normal), normal);
     
     //light intensity
-    //float intensity = min(20 / max(length(LightPosition.xyz - input.PosWorld), 1), 1);
+    float intensity_scale = 5;
+    //float intensity = min(intensity_scale / max(length(LightPosition.xyz - input.PosWorld), 1), 1); //
     float intensity = 1;
     float shininess = 200;
     
-    float4 ambient = float4(0, 0, 0, 1); //black
+    //float4 ambient = float4(0, 0, 0, 1); //black
     //float4 diffuse = float4(1, 0, 0, 1); //red
-    //float4 ambient = Ambient;
+    
+    //phong shading 
+    float4 ambient = Ambient;
     float4 diffuse = Diffuse * max(dot(normal, lightdir), 0);
     float4 specular = Specular * max(pow(abs(dot(reflection, cameradir)), shininess), 0);
-    float4 lambert = ambient + diffuse + specular;
-    return float4(lambert.xyz * intensity, 1);
+    float4 phong = ambient + diffuse + specular;
+    return float4(phong.xyz * intensity, phong.w);
 	
     //return float4(normalize(LightPosition.xyz - input.PosWorld), 1);
     //return float4(normalize(CameraPosition.xyz), 1);
