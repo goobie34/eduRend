@@ -81,7 +81,8 @@ class OurTestScene : public Scene
 	// + other CBuffers
 	ID3D11Buffer* m_lightcam_buffer = nullptr;
 
-	ID3D11SamplerState* m_sampler_state;
+	ID3D11SamplerState* m_sampler_state = nullptr; //default sampler state
+	std::vector<ID3D11SamplerState*> m_sampler_states_demo{ 9, nullptr }; //9 sampler states used for demonstration of graphics settings
 
 
 	//
@@ -91,6 +92,9 @@ class OurTestScene : public Scene
 
 	//Light sources
 	vec3f m_light_pos;
+	Model* m_light_debug_model;
+	mat4f m_light_debug_model_transform;
+
 
 	Model* m_quad;
 	Model* m_cube;
@@ -116,7 +120,9 @@ class OurTestScene : public Scene
 	// Misc
 	float m_angle = 0;			// A per-frame updated rotation angle (radians)...
 	float m_angular_velocity = fPI / 2;	// ...and its velocity (radians/sec)
-	float m_camera_velocity = 7;	// Camera movement velocity in units/s
+	float m_camera_velocity;				// Camera movement velocity in units/s
+	float m_camera_velocity_default = 7;	// Default camera velocity
+	float m_camera_velocity_sprint = 18;	// Sprint camera velocity
 	float m_camera_sensitivity = 0.005f;
 	float m_camera_pitch_angle = 3.141592653 / 2; //how much camera can look up or down (in radians).  pi / 2 rad = 90 deg
 	bool m_inverted_camera = true;
@@ -127,6 +133,7 @@ class OurTestScene : public Scene
 	float m_light_anim_range = 20.0f;
 
 	void InitSamplerState();
+	void InitSamplerState(D3D11_FILTER filter_type, D3D11_TEXTURE_ADDRESS_MODE adress_mode, int anisotropic_samples, ID3D11SamplerState *out_sampler_state);
 
 	void InitTransformationBuffer();
 	void InitLightCamBuffer();

@@ -33,6 +33,7 @@ OurTestScene::OurTestScene(
 	InitTransformationBuffer();
 	// + init other CBuffers
 	InitLightCamBuffer();
+
 	InitSamplerState();
 }
 
@@ -52,12 +53,14 @@ void OurTestScene::Init()
 
 	//Create light sources
 	m_light_pos = { 0, 0,-4 };
+	m_light_debug_model = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
+	m_sun = new OBJModel("assets/carbody/carbody.obj", m_dxdevice, m_dxdevice_context);
 
 	// Create objects
 	m_quad = new QuadModel(m_dxdevice, m_dxdevice_context);
 	m_cube = new Cube(m_dxdevice, m_dxdevice_context);
 	m_sponza = new OBJModel("assets/crytek-sponza/sponza.obj", m_dxdevice, m_dxdevice_context);
-	
+
 	//Solar system model objects
 	//m_sun = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
 	m_sun = new OBJModel("assets/carbody/carbody.obj", m_dxdevice, m_dxdevice_context);
@@ -83,13 +86,18 @@ void OurTestScene::Update(
 	vec3f cam_right_world = { cam_right_world_homogenous.x, cam_right_world_homogenous.y, cam_right_world_homogenous.z };
 
 	// Camera control
-	if (input_handler.IsKeyPressed(Keys::Up) || input_handler.IsKeyPressed(Keys::W))
+	if (input_handler.IsKeyPressed(Keys::LShift))
+		m_camera_velocity = m_camera_velocity_sprint;
+	else
+		m_camera_velocity = m_camera_velocity_default;
+
+	if (input_handler.IsKeyPressed(Keys::W))
 		m_camera->Move(cam_forward_world * m_camera_velocity * dt);
-	if (input_handler.IsKeyPressed(Keys::Down) || input_handler.IsKeyPressed(Keys::S))
+	if (input_handler.IsKeyPressed(Keys::S))
 		m_camera->Move(cam_forward_world * -m_camera_velocity * dt);
-	if (input_handler.IsKeyPressed(Keys::Right) || input_handler.IsKeyPressed(Keys::D))
+	if (input_handler.IsKeyPressed(Keys::D))
 		m_camera->Move(cam_right_world * m_camera_velocity * dt);
-	if (input_handler.IsKeyPressed(Keys::Left) || input_handler.IsKeyPressed(Keys::A))
+	if (input_handler.IsKeyPressed(Keys::A))
 		m_camera->Move(cam_right_world * -m_camera_velocity * dt);
 	if(input_handler.IsKeyPressed(Keys::Space))
 		m_camera->Move({ 0.0f, m_camera_velocity * dt, 0.0f });
@@ -98,8 +106,26 @@ void OurTestScene::Update(
 	if(input_handler.IsKeyPressed(Keys::Esc))
 		PostQuitMessage(0);
 
+
+	if (input_handler.IsKeyPressed(Keys::Left)) {
+		m_light_pos.x -= m_light_speed * 0.2;
+		m_light_debug_model_transform = mat4f::translation(m_light_pos);
+	}
+	if (input_handler.IsKeyPressed(Keys::Right)) {
+		m_light_pos.x += m_light_speed * 0.2;
+		m_light_debug_model_transform = mat4f::translation(m_light_pos);
+	}
+	if (input_handler.IsKeyPressed(Keys::Up)) {
+		m_light_pos.z -= m_light_speed * 0.2;
+		m_light_debug_model_transform = mat4f::translation(m_light_pos);
+	}
+	if (input_handler.IsKeyPressed(Keys::Down)) {
+		m_light_pos.z += m_light_speed * 0.2;
+		m_light_debug_model_transform = mat4f::translation(m_light_pos);
+	}
+
 	//light animation
-	if (m_light_pos.x < -m_light_anim_range) {
+	/*if (m_light_pos.x < -m_light_anim_range) {
 		m_light_speed *= -1;
 		m_light_pos.x = -m_light_anim_range;
 	}
@@ -109,10 +135,9 @@ void OurTestScene::Update(
 	}
 	else {
 		m_light_pos.x += m_light_speed * dt;
-	}
+	}*/
 
-	std::cout << m_light_pos << std::endl;
-
+	//std::cout << m_light_pos << std::endl;
 
 	//rotate camera
 	linalg:vec2f mouse_delta_xy = {
@@ -121,6 +146,28 @@ void OurTestScene::Update(
 
 	//m_camera->Rotate(mouse_delta_xy * m_camera_sensitivity * (m_inverted_camera ? -1.0f : 1.0f));
 	m_camera->RotateWithConstraint(mouse_delta_xy * m_camera_sensitivity * (m_inverted_camera ? -1.0f : 1.0f), m_camera_pitch_angle, -m_camera_pitch_angle);
+
+	//Change sampler states during runtime with number keys/numpad
+	if (input_handler.IsKeyPressed(Keys::Key1) || input_handler.IsKeyPressed(Keys::Num1))
+		InitSamplerState(D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP, 1, m_sampler_states_demo[0]);
+	if (input_handler.IsKeyPressed(Keys::Key2) || input_handler.IsKeyPressed(Keys::Num2))
+		InitSamplerState(D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_MIRROR, 1, m_sampler_states_demo[1]);
+	if (input_handler.IsKeyPressed(Keys::Key3) || input_handler.IsKeyPressed(Keys::Num3))
+		InitSamplerState(D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_CLAMP, 1, m_sampler_states_demo[2]);
+	if (input_handler.IsKeyPressed(Keys::Key4) || input_handler.IsKeyPressed(Keys::Num4))
+		InitSamplerState(D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP, 1, m_sampler_states_demo[3]);
+	if (input_handler.IsKeyPressed(Keys::Key5) || input_handler.IsKeyPressed(Keys::Num5))
+		InitSamplerState(D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_MIRROR, 1, m_sampler_states_demo[4]);
+	if (input_handler.IsKeyPressed(Keys::Key6) || input_handler.IsKeyPressed(Keys::Num6))
+		InitSamplerState(D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP, 1, m_sampler_states_demo[5]);
+	if (input_handler.IsKeyPressed(Keys::Key7) || input_handler.IsKeyPressed(Keys::Num7))
+		InitSamplerState(D3D11_FILTER_ANISOTROPIC, D3D11_TEXTURE_ADDRESS_WRAP, 4, m_sampler_states_demo[6]);
+	if (input_handler.IsKeyPressed(Keys::Key8) || input_handler.IsKeyPressed(Keys::Num8))
+		InitSamplerState(D3D11_FILTER_ANISOTROPIC, D3D11_TEXTURE_ADDRESS_WRAP, 8, m_sampler_states_demo[7]);
+	if (input_handler.IsKeyPressed(Keys::Key9) || input_handler.IsKeyPressed(Keys::Num9))
+		InitSamplerState(D3D11_FILTER_ANISOTROPIC, D3D11_TEXTURE_ADDRESS_WRAP, 16, m_sampler_states_demo[8]);
+	if (input_handler.IsKeyPressed(Keys::Key0) || input_handler.IsKeyPressed(Keys::Num0))
+		InitSamplerState(); //defualt
 
 	// Now set/update object transformations
 	// This can be done using any sequence of transformation matrices,
@@ -207,6 +254,10 @@ void OurTestScene::Render()
 
 	UpdateTransformationBuffer(m_moon_transform, m_view_matrix, m_projection_matrix);
 	m_moon->Render();
+
+	// Light debug model
+	UpdateTransformationBuffer(m_light_debug_model_transform, m_view_matrix, m_projection_matrix);
+	m_light_debug_model->Render();
 }
 
 void OurTestScene::Release()
@@ -219,12 +270,17 @@ void OurTestScene::Release()
 	SAFE_DELETE(m_cube);
 	SAFE_DELETE(m_sponza);
 	SAFE_DELETE(m_camera);
+	SAFE_DELETE(m_light_debug_model);
 
 	SAFE_RELEASE(m_transformation_buffer);
 	// + release other CBuffers
 
 	SAFE_RELEASE(m_lightcam_buffer);
 	SAFE_RELEASE(m_sampler_state);
+
+	for (auto& sampler : m_sampler_states_demo) {
+		SAFE_RELEASE(sampler);
+	}
 }
 
 void OurTestScene::OnWindowResized(
@@ -238,6 +294,7 @@ void OurTestScene::OnWindowResized(
 }
 
 void OurTestScene::InitSamplerState() {
+	HRESULT hr;
 	D3D11_SAMPLER_DESC sampler_desc = {
 		D3D11_FILTER_MIN_MAG_MIP_LINEAR, // Filter
 		D3D11_TEXTURE_ADDRESS_MIRROR, // AddressU
@@ -252,6 +309,29 @@ void OurTestScene::InitSamplerState() {
 	};
 	m_dxdevice->CreateSamplerState(&sampler_desc, &m_sampler_state);
 	m_dxdevice_context->PSSetSamplers(0, 1, &m_sampler_state);
+}
+void OurTestScene::InitSamplerState(D3D11_FILTER filter_type,
+	D3D11_TEXTURE_ADDRESS_MODE adress_mode,
+	int anisotropic_samples,
+	ID3D11SamplerState* out_sampler_state)
+{
+	std::cout << "init sampler state" << std::endl;
+
+	HRESULT hr;
+	D3D11_SAMPLER_DESC sampler_desc = {
+		filter_type, // Filter
+		adress_mode, // AddressU
+		adress_mode, // AddressV
+		D3D11_TEXTURE_ADDRESS_CLAMP, // AddressW
+		0.0f, // MipLODBias
+		anisotropic_samples, // MaxAnisotropy
+		D3D11_COMPARISON_NEVER, // ComapirsonFunc
+		{ 1.0f, 1.0f, 1.0f, 1.0f }, // BorderColor
+		-FLT_MAX, // MinLOD
+		FLT_MAX // MaxLOD
+	};
+	ASSERT(hr = m_dxdevice->CreateSamplerState(&sampler_desc, &out_sampler_state));
+	m_dxdevice_context->PSSetSamplers(0, 1, &out_sampler_state);
 }
 
 void OurTestScene::InitTransformationBuffer()

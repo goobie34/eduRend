@@ -5,6 +5,7 @@ Cube::Cube(
 	ID3D11DeviceContext* dxdevice_context)
 	: Model(dxdevice, dxdevice_context)
 {
+	//Materials
 	m_materials.push_back(DefaultMaterial);
 	m_materials[0].Name = "Cube Material";
 	m_materials[0].AmbientColour = { 0, 0, 0 };
@@ -12,8 +13,8 @@ Cube::Cube(
 	m_materials[0].SpecularColour = { 1, 1, 1 };
 	m_materials[0].DiffuseTextureFilename = "assets/textures/crate.png";
 
+	//Textures
 	if (m_materials[0].DiffuseTextureFilename.size()) {
-
 		HRESULT hr = LoadTextureFromFile(
 			dxdevice,
 			dxdevice_context,
@@ -23,6 +24,7 @@ Cube::Cube(
 			<< (SUCCEEDED(hr) ? " - OK" : "- FAILED") << std::endl;
 	}
 
+	//Geometry
 	std::vector<Vertex> vertices;
 	std::vector<unsigned> indices;
 
