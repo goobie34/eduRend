@@ -35,9 +35,9 @@ float4 PS_main(PSIn input) : SV_Target
     float3 reflection = normalize(reflect(-lightdir, normal)); //vector for reflecting light in the object
     
     //light intensity
-    float intensity_scale = 5;
-    float intensity = min(intensity_scale / max(length(LightPosition.xyz - input.PosWorld), 1), 1); //intensity scales with distance to the light
-    //float intensity = 1;
+    float intensity_scale = 10;
+    //float intensity = min(intensity_scale / max(length(LightPosition.xyz - input.PosWorld), 1), 1); //intensity scales with distance to the light
+    float intensity = 1;
     float shininess = 64;
     
     //float4 ambient = float4(0, 0, 0, 1); //black
@@ -51,7 +51,8 @@ float4 PS_main(PSIn input) : SV_Target
     //float4 ambient = float4(0, 0, 0, 1); //black
     //float4 diffuse = Diffuse * max(dot(normal, lightdir), 0);
     
-    float4 ambient = float4(diffuseTexture.xyz * 0.2, diffuseTexture.w);
+    float ambientScale = 0.2;
+    float4 ambient = float4(diffuseTexture.xyz * ambientScale, diffuseTexture.w); //fake ambient by scaling down diffuseTexture
     float4 diffuse = diffuseTexture * max(dot(normal, lightdir), 0);
     float4 specular = Specular * pow(max(dot(reflection, cameradir), 0), shininess);
     float4 phong = ambient + diffuse + specular;

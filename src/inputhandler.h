@@ -46,6 +46,7 @@ enum class Keys
 	Num8 = DIK_NUMPAD8,
 	Num9 = DIK_NUMPAD9,
 	Num0 = DIK_NUMPAD0,
+	Enter = DIK_RETURN,
 };
 
 /**

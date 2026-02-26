@@ -33,7 +33,6 @@ OurTestScene::OurTestScene(
 	InitTransformationBuffer();
 	// + init other CBuffers
 	InitLightCamBuffer();
-
 	InitSamplerState();
 }
 
@@ -45,7 +44,7 @@ void OurTestScene::Init()
 	m_camera = new Camera(
 		45.0f * fTO_RAD,		// field-of-view (radians)
 		(float)m_window_width / m_window_height,	// aspect ratio
-		1.0f,					// z-near plane (everything closer will be clipped/removed)
+		0.1f,					// z-near plane (everything closer will be clipped/removed)
 		500.0f);				// z-far plane (everything further will be clipped/removed)
 
 	// Move camera to (0,0,5)
@@ -54,7 +53,6 @@ void OurTestScene::Init()
 	//Create light sources
 	m_light_pos = { 0, 0,-4 };
 	m_light_debug_model = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
-	m_sun = new OBJModel("assets/carbody/carbody.obj", m_dxdevice, m_dxdevice_context);
 
 	// Create objects
 	m_quad = new QuadModel(m_dxdevice, m_dxdevice_context);
@@ -62,8 +60,8 @@ void OurTestScene::Init()
 	m_sponza = new OBJModel("assets/crytek-sponza/sponza.obj", m_dxdevice, m_dxdevice_context);
 
 	//Solar system model objects
-	//m_sun = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
-	m_sun = new OBJModel("assets/carbody/carbody.obj", m_dxdevice, m_dxdevice_context);
+	m_sun = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
+	//m_sun = new OBJModel("assets/carbody/carbody.obj", m_dxdevice, m_dxdevice_context);
 	m_earth = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
 	m_moon = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
 }
@@ -107,6 +105,7 @@ void OurTestScene::Update(
 		PostQuitMessage(0);
 
 
+	//Move light with arrow keys
 	if (input_handler.IsKeyPressed(Keys::Left)) {
 		m_light_pos.x -= m_light_speed * 0.2;
 		m_light_debug_model_transform = mat4f::translation(m_light_pos);

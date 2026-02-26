@@ -132,7 +132,10 @@ class OurTestScene : public Scene
 	float m_light_speed = 6.0f;
 	float m_light_anim_range = 20.0f;
 
+	//Init default sampler
 	void InitSamplerState();
+
+	//Init demonstration sampler for switching graphics settings during runtime
 	void InitSamplerState(D3D11_FILTER filter_type, D3D11_TEXTURE_ADDRESS_MODE adress_mode, int anisotropic_samples, ID3D11SamplerState *out_sampler_state);
 
 	void InitTransformationBuffer();
