@@ -67,7 +67,6 @@ OBJModel::OBJModel(
 		HRESULT hr;
 
 		// Load Diffuse texture
-		//
 		if (material.DiffuseTextureFilename.size()) {
 
 			hr = LoadTextureFromFile(
@@ -76,6 +75,18 @@ OBJModel::OBJModel(
 				material.DiffuseTextureFilename.c_str(),
 				&material.DiffuseTexture);
 			std::cout << "\t" << material.DiffuseTextureFilename
+				<< (SUCCEEDED(hr) ? " - OK" : "- FAILED") << std::endl;
+		}
+
+		// Load Normal texture
+		if (material.NormalTextureFilename.size()) {
+
+			hr = LoadTextureFromFile(
+				dxdevice,
+				dxdevice_context,
+				material.NormalTextureFilename.c_str(),
+				&material.NormalTexture);
+			std::cout << "\t" << material.NormalTextureFilename
 				<< (SUCCEEDED(hr) ? " - OK" : "- FAILED") << std::endl;
 		}
 
@@ -105,6 +116,7 @@ void OBJModel::Render() const
 
 		// Bind diffuse texture to slot t0 of the PS
 		m_dxdevice_context->PSSetShaderResources(0, 1, &material.DiffuseTexture.TextureView);
+		m_dxdevice_context->PSSetShaderResources(1, 1, &material.NormalTexture.TextureView);
 		// + bind other textures here, e.g. a normal map, to appropriate slots
 
 		UpdateMaterialBuffer(vec4f(material.AmbientColour, 1), vec4f(material.DiffuseColour, 1), vec4f(material.SpecularColour, 1));
@@ -120,6 +132,7 @@ OBJModel::~OBJModel()
 	for (auto& material : m_materials)
 	{
 		SAFE_RELEASE(material.DiffuseTexture.TextureView);
+		SAFE_RELEASE(material.NormalTexture.TextureView);
 
 		// Release other used textures ...
 	}
