@@ -11,7 +11,6 @@ OBJModel::OBJModel(
 	mesh->Load(objfile);
 
 	// Load and organize indices in ranges per drawcall (material)
-
 	std::vector<unsigned> indices;
 	unsigned int indexOffset = 0;
 
@@ -27,6 +26,25 @@ OBJModel::OBJModel(
 		m_index_ranges.push_back({ indexOffset, indexSize, 0, materialIndex });
 
 		indexOffset = (unsigned int)indices.size();
+	}
+
+
+	//TODO: this average didnt work as it should...
+	//reset T and B
+	for (auto& v : mesh->Vertices) {
+		v.Tangent = vec3f_zero;
+		v.Binormal = vec3f_zero;
+	}
+
+	//compute average T and B for each vertex per triangle
+	for (int i = 0; i + 2 < indices.size(); i += 3) {
+			compute_TB(mesh->Vertices[indices[i]], mesh->Vertices[indices[i + 1]], mesh->Vertices[indices[i + 2]]);
+	}
+
+	//normalize T and B
+	for (auto& v : mesh->Vertices) {
+		v.Tangent = v.Tangent.normalize();
+		v.Binormal = v.Binormal.normalize();
 	}
 
 	// Vertex array descriptor
@@ -89,6 +107,11 @@ OBJModel::OBJModel(
 			std::cout << "\t" << material.NormalTextureFilename
 				<< (SUCCEEDED(hr) ? " - OK" : "- FAILED") << std::endl;
 		}
+		else {
+			hr = LoadDefaultTexture(dxdevice, &material.NormalTexture);
+			std::cout << "\t" << "Default normal map texture"
+				<< (SUCCEEDED(hr) ? " - OK" : "- FAILED") << std::endl;
+		}
 
 		// + other texture types here - see Material class
 		// ...
@@ -111,12 +134,14 @@ void OBJModel::Render() const
 	// Iterate Drawcalls
 	for (auto& indexRange : m_index_ranges)
 	{
+
 		// Fetch material
 		const Material& material = m_materials[indexRange.MaterialIndex];
 
 		// Bind diffuse texture to slot t0 of the PS
 		m_dxdevice_context->PSSetShaderResources(0, 1, &material.DiffuseTexture.TextureView);
 		m_dxdevice_context->PSSetShaderResources(1, 1, &material.NormalTexture.TextureView);
+
 		// + bind other textures here, e.g. a normal map, to appropriate slots
 
 		UpdateMaterialBuffer(vec4f(material.AmbientColour, 1), vec4f(material.DiffuseColour, 1), vec4f(material.SpecularColour, 1));

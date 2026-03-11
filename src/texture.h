@@ -49,6 +49,13 @@ HRESULT LoadTextureFromFile(ID3D11Device* dxdevice,	const char* filename, Textur
  * @return HRESULT of the texture creation.
 */
 HRESULT LoadTextureFromFile(ID3D11Device* dxdevice,	ID3D11DeviceContext* dxdevice_context, const char* filename, Texture* texture_out);
+/**
+ * @brief Gereates a one pixel texture with RGBA: 128, 128, 255, 255. Used for materials that don't include normal maps.
+ * @param[in] dxdevice Valid ID3D11Device device.
+ * @param[out] texture_out Texture struct to store the resulting texture in.
+ * @return HRESULT of the texture creation.
+*/
+HRESULT LoadDefaultTexture(ID3D11Device* dxdevice, Texture* texture_out);
 
 /**
  * @brief Loads a 3D texture from 6 individual images.

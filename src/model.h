@@ -39,6 +39,7 @@ protected:
 	
 	void InitMaterialBuffer();
 	void UpdateMaterialBuffer(vec4f ambient, vec4f diffuse, vec4f specular) const;
+	void compute_TB(Vertex& v0, Vertex& v1, Vertex& v2);
 
 public:
 

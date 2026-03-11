@@ -125,6 +125,57 @@ HRESULT LoadTextureFromFile(
     return S_OK;
 }
 
+HRESULT LoadDefaultTexture(
+    ID3D11Device* dxdevice,
+    Texture* texture_out)
+{
+    HRESULT hr;
+
+    // Create texture
+    D3D11_TEXTURE2D_DESC desc = {};
+    desc.Width = 1;
+    desc.Height = 1;
+    desc.MipLevels = 1;
+    desc.ArraySize = 1;
+    desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    desc.SampleDesc.Count = 1;
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    desc.CPUAccessFlags = 0;
+
+    D3D11_SUBRESOURCE_DATA subResource{};
+    //uint8_t flatNormalPixel[] = { 128, 128, 255, 255 };
+    uint8_t flatNormalPixel[] = { 128, 128, 255, 255 };
+    subResource.pSysMem = flatNormalPixel;
+    subResource.SysMemPitch = 4;
+
+    ID3D11Texture2D* pTexture = NULL;
+
+    if (FAILED(hr = dxdevice->CreateTexture2D(
+        &desc,
+        &subResource,
+        &pTexture)))
+    {
+        return hr;
+    }
+
+    if (FAILED(hr = dxdevice->CreateShaderResourceView(
+        pTexture,
+        nullptr,
+        &texture_out->TextureView)))
+    {
+        return hr;
+    }
+
+    // Cleanup
+    pTexture->Release();
+
+    // Done
+    texture_out->Width = 1;
+    texture_out->Weight = 1;
+    return S_OK;
+}
+
 HRESULT LoadCubeTextureFromFile(
     ID3D11Device* dxdevice,
     const char** filenames,
