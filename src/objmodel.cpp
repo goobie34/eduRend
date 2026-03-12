@@ -28,8 +28,7 @@ OBJModel::OBJModel(
 		indexOffset = (unsigned int)indices.size();
 	}
 
-
-	//TODO: this average didnt work as it should...
+	//--- calculate tangent and binormal ---
 	//reset T and B
 	for (auto& v : mesh->Vertices) {
 		v.Tangent = vec3f_zero;
@@ -41,7 +40,7 @@ OBJModel::OBJModel(
 			compute_TB(mesh->Vertices[indices[i]], mesh->Vertices[indices[i + 1]], mesh->Vertices[indices[i + 2]]);
 	}
 
-	//normalize T and B
+	//normalize T and B, this gives us a weighted average for T and B as compute_TB() uses compound assignment
 	for (auto& v : mesh->Vertices) {
 		v.Tangent = v.Tangent.normalize();
 		v.Binormal = v.Binormal.normalize();
@@ -54,6 +53,7 @@ OBJModel::OBJModel(
 	vertexbufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	vertexbufferDesc.MiscFlags = 0;
 	vertexbufferDesc.ByteWidth = (UINT)(mesh->Vertices.size() * sizeof(Vertex));
+
 	// Data resource
 	D3D11_SUBRESOURCE_DATA vertexData = { 0 };
 	vertexData.pSysMem = &(mesh->Vertices)[0];

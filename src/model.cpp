@@ -25,12 +25,10 @@ void Model::UpdateMaterialBuffer(vec4f ambient, vec4f diffuse, vec4f specular) c
 
 void Model::compute_TB(Vertex& v0, Vertex& v1, Vertex& v2)
 {
-	vec3f tangent, binormal;
+	//based on modified source code from lengyels blog
+	//www.terathon.com/blog/tangent-space.html
 
-	// TODO: compute the 'tangent' and 'binormal' vectors
-	//       using Lengyel’s method, as given in lecture
-	//		 modified source code from lengyels blog
-	//		 www.terathon.com/blog/tangent-space.html
+	vec3f tangent, binormal;
 
 	//3d vector from v0 --> v1 (model space)
 	float x1 = v1.Position.x - v0.Position.x; //delta x between v1, v2
@@ -50,17 +48,17 @@ void Model::compute_TB(Vertex& v0, Vertex& v1, Vertex& v2)
 	float s2 = v2.TexCoord.x - v0.TexCoord.x;
 	float t2 = v2.TexCoord.y - v0.TexCoord.y;
 
+	//this term appears on the right side of the equation
 	//after multiplying both sides with inverse of (s, t) matrix
 	float r = 1.0F / (s1 * t2 - s2 * t1);
 
 	//matrix multiplication for T and B (with r)
 	tangent = vec3f((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
 	binormal = vec3f((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
-
-	/*tangent  = tangent.normalize();
-	binormal = binormal.normalize();*/
 	
-	// Now assign the newly computed vectors to the vertices
+	//Compound assignment of computed vectors to the vertices
+	//Since some vertices are part of multiple triangles
+	//These vectors become weighted averages when normalized
 	v0.Tangent += tangent;
 	v1.Tangent += tangent;
 	v2.Tangent += tangent;

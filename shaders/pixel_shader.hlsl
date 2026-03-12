@@ -59,7 +59,6 @@ float4 PS_main(PSIn input) : SV_Target
     
     //return float4(normalSample, 1);
     //float3 normal = normalize(input.Normal); //object surface normal
-  
     
     //light intensity
     float intensity_scale = 10;
@@ -76,6 +75,7 @@ float4 PS_main(PSIn input) : SV_Target
     float ambientScale = 0.2;
     float4 ambient = float4(diffuseTexture.xyz * ambientScale, diffuseTexture.w); //fake ambient by scaling down diffuseTexture
     float4 diffuse = diffuseTexture * max(dot(normal, lightdir), 0);
+    //float4 diffuse = Diffuse * max(dot(normal, lightdir), 0);
     float4 specular = Specular * pow(max(dot(reflection, cameradir), 0), shininess);
     float4 phong = ambient + diffuse + specular;
     return float4(phong.xyz * intensity, phong.w);

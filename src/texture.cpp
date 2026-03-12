@@ -144,7 +144,6 @@ HRESULT LoadDefaultTexture(
     desc.CPUAccessFlags = 0;
 
     D3D11_SUBRESOURCE_DATA subResource{};
-    //uint8_t flatNormalPixel[] = { 128, 128, 255, 255 };
     uint8_t flatNormalPixel[] = { 128, 128, 255, 255 };
     subResource.pSysMem = flatNormalPixel;
     subResource.SysMemPitch = 4;
