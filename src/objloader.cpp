@@ -136,6 +136,16 @@ void OBJLoader::LoadMaterials(
             else
                 throw std::runtime_error(std::string("Error: no allowed format found for 'map_bump' in material ") + current_mtl->Name);
         }
+		////EXTENSION: Cube map
+  //      else if (sscanf_s(line.c_str(), "map_cube %[^\n]", str0, MaxChars) == 1)
+  //      {
+  //          // search for the image file and ignore the rest
+  //          std::string mapfile;
+		//	if (find_filename_from_suffixes(str0, ALLOWED_TEXTURE_SUFFIXES, mapfile))
+  //              current_mtl->CubeMapTextureFilename = path+mapfile;
+  //          else
+  //              throw std::runtime_error(std::string("Error: no allowed format found for 'map_cube' in material ") + current_mtl->Name);
+  //      }
         else if (sscanf_s(line.c_str(), "bump %[^\n]", str0, MaxChars) == 1)
         {
             // search for the image file and ignore the rest

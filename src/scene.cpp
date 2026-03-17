@@ -50,6 +50,11 @@ void OurTestScene::Init()
 	// Move camera to (0,0,5)
 	m_camera->MoveTo({ 0, 0, 5 });
 
+	//load cube map
+	m_cube_texture = new Texture();
+	LoadCubeMap(m_dxdevice, m_cube_texture);
+	
+
 	//Create light sources
 	m_light_pos = { 0, 0,-4 };
 	m_light_debug_model = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
@@ -64,6 +69,8 @@ void OurTestScene::Init()
 	//m_sun = new OBJModel("assets/carbody/carbody.obj", m_dxdevice, m_dxdevice_context);
 	m_earth = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
 	m_moon = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
+
+
 }
 
 //
@@ -226,6 +233,10 @@ void OurTestScene::Render()
 	m_dxdevice_context->VSSetConstantBuffers(0, 1, &m_transformation_buffer);
 	m_dxdevice_context->PSSetConstantBuffers(0, 1, &m_lightcam_buffer);
 
+	//Bind cube map to PS
+	unsigned cube_slot = 2;
+	m_dxdevice_context->PSSetShaderResources(cube_slot, 1, &m_cube_texture->TextureView);
+
 	UpdateLightCamBuffer(vec4f(m_camera->Position(), 1), vec4f(m_light_pos, 1));
 
 	// Obtain the matrices needed for rendering from the camera
@@ -276,6 +287,10 @@ void OurTestScene::Release()
 
 	SAFE_RELEASE(m_lightcam_buffer);
 	SAFE_RELEASE(m_sampler_state);
+
+	SAFE_RELEASE(m_cube_texture->TextureView);
+	SAFE_DELETE(m_cube_texture);
+
 
 	for (auto& sampler : m_sampler_states_demo) {
 		SAFE_RELEASE(sampler);
@@ -385,4 +400,26 @@ void OurTestScene::UpdateLightCamBuffer(
 	lightCamBuffer->CameraPosition = camera_position;
 	lightCamBuffer->LightPosition = light_position;
 	m_dxdevice_context->Unmap(m_lightcam_buffer, 0);
+}
+
+void OurTestScene::LoadCubeMap(ID3D11Device* dxdevice, Texture* cube_texture) {
+	// Array of paths to cube map images
+	const char* cube_filenames[6] =
+	{
+		"assets/cubemaps/debug_cubemap/debug_posx.png",
+		"assets/cubemaps/debug_cubemap/debug_negx.png",
+		"assets/cubemaps/debug_cubemap/debug_posy.png",
+		"assets/cubemaps/debug_cubemap/debug_negy.png",
+		"assets/cubemaps/debug_cubemap/debug_posz.png",
+		"assets/cubemaps/debug_cubemap/debug_negz.png"
+	};
+
+	HRESULT hr = LoadCubeTextureFromFile(
+		dxdevice,
+		cube_filenames,
+		cube_texture);
+
+	if (SUCCEEDED(hr)) std::cout << "Cubemap OK" << std::endl;
+	else std::cout << "Cubemap failed to load" << std::endl;
+
 }

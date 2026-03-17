@@ -90,6 +90,8 @@ class OurTestScene : public Scene
 	//
 	Camera* m_camera;
 
+	Texture* m_cube_texture;
+
 	//Light sources
 	vec3f m_light_pos;
 	Model* m_light_debug_model;
@@ -143,6 +145,8 @@ class OurTestScene : public Scene
 
 	void UpdateTransformationBuffer(mat4f model_to_world_matrix, mat4f world_to_view_matrix, mat4f projection_matrix);
 	void UpdateLightCamBuffer(vec4f camera_position, vec4f light_position);
+
+	void LoadCubeMap(ID3D11Device* dxdevice, Texture* cube_texture);
 
 public:
 	/**

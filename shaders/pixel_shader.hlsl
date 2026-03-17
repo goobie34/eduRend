@@ -1,5 +1,6 @@
 Texture2D texDiffuse : register(t0);
 Texture2D texNormal : register(t1);
+TextureCube texCube : register(t2);
 
 SamplerState texSampler: register(s0);
 
@@ -66,7 +67,8 @@ float4 PS_main(PSIn input) : SV_Target
     float intensity = 1;
     float shininess = 64;
     
-    float4 diffuseTexture = texDiffuse.Sample(texSampler, input.TexCoord);
+    float4 diffuseTexture = texCube.Sample(texSampler, normalize(LightPosition.xyz));
+    //float4 diffuseTexture = texDiffuse.Sample(texSampler, input.TexCoord);
     //float4 diffuseTexture = float4(normalSample, 1);
     
     float3 reflection = normalize(reflect(-lightdir, normal)); //vector for reflecting light in the object
