@@ -2,16 +2,17 @@
 
 Cube::Cube(
 	ID3D11Device* dxdevice,
-	ID3D11DeviceContext* dxdevice_context)
+	ID3D11DeviceContext* dxdevice_context, bool is_skybox)
 	: Model(dxdevice, dxdevice_context)
 {
 	//Materials
 	m_materials.push_back(DefaultMaterial);
 	m_materials[0].Name = "Cube Material";
-	m_materials[0].AmbientColour = { 0, 0, 0 };
-	m_materials[0].DiffuseColour = { 0, 0, 0 };
+	m_materials[0].AmbientColour = { 1, 1, 1 };
+	m_materials[0].DiffuseColour = { 1, 1, 1 };
 	m_materials[0].SpecularColour = { 1, 1, 1 };
 	m_materials[0].DiffuseTextureFilename = "assets/textures/crate.png";
+	//m_materials[0].NormalTextureFilename = "assets/textures/Fieldstone_bump.png";
 
 	//Textures
 	if (m_materials[0].DiffuseTextureFilename.size()) {
@@ -21,6 +22,20 @@ Cube::Cube(
 			m_materials[0].DiffuseTextureFilename.c_str(),
 			&m_materials[0].DiffuseTexture);
 		std::cout << "\t" << m_materials[0].DiffuseTextureFilename
+			<< (SUCCEEDED(hr) ? " - OK" : "- FAILED") << std::endl;
+	}
+
+	if (m_materials[0].NormalTextureFilename.size()) {
+		HRESULT hr = LoadTextureFromFile(
+			dxdevice,
+			dxdevice_context,
+			m_materials[0].NormalTextureFilename.c_str(),
+			&m_materials[0].NormalTexture);
+		std::cout << "\t" << m_materials[0].NormalTextureFilename
+			<< (SUCCEEDED(hr) ? " - OK" : "- FAILED") << std::endl;
+	} else {
+		HRESULT hr = LoadDefaultTexture(dxdevice, &m_materials[0].NormalTexture);
+		std::cout << "\t" << "Default normal map texture"
 			<< (SUCCEEDED(hr) ? " - OK" : "- FAILED") << std::endl;
 	}
 
@@ -73,61 +88,128 @@ Cube::Cube(
 
 	//Set normals and texture coordinates, then add to vertex buffer
 	for (int i = 0; i < 24; i++) {
-		v[i].Normal = normals[(int)(i / 4)]; //first four verteces get normals[0], next four get normals[1] and so on
+		v[i].Normal = normals[(int)(i / 4)] * (is_skybox ? -1 : 1); //first four vertices get normals[0], next four get normals[1] and so on, invert them if this is a skybox
 		v[i].TexCoord = corner_tex_coords[i % 4]; //ensures that corners of cube a face matches corner of texture space
 		vertices.push_back(v[i]);
 	}
 
-	// Populate the index array with triangles
-	// Triangle #1
-	indices.push_back(0);
-	indices.push_back(1);
-	indices.push_back(3);
-	//Triangle #2
-	indices.push_back(1);
-	indices.push_back(2);
-	indices.push_back(3);
-	// Triangle #3
-	indices.push_back(4);
-	indices.push_back(5);
-	indices.push_back(7);
-	// Triangle #4
-	indices.push_back(5);
-	indices.push_back(6);
-	indices.push_back(7);
-	// Triangle #5
-	indices.push_back(8);
-	indices.push_back(9);
-	indices.push_back(11);
-	// Triangle #6
-	indices.push_back(9);
-	indices.push_back(10);
-	indices.push_back(11);
-	// Triangle #7
-	indices.push_back(12);
-	indices.push_back(13);
-	indices.push_back(15);
-	// Triangle #8
-	indices.push_back(13);
-	indices.push_back(14);
-	indices.push_back(15);
-	// Triangle #9
-	indices.push_back(16);
-	indices.push_back(17);
-	indices.push_back(19);
-	// Triangle #10
-	indices.push_back(17);
-	indices.push_back(18);
-	indices.push_back(19);
-	// Triangle #11
-	indices.push_back(23);
-	indices.push_back(22);
-	indices.push_back(20);
-	// Triangle #12
-	indices.push_back(22);
-	indices.push_back(21);
-	indices.push_back(20);
+	//cube map mode is used in PS to calculate reflection
+	//default is 0 = no cube mapping, 3 = skybox
+	//SetCubeMapMode(3);
+	// Populate the index array with triangles, order vertices depend on if this cube is a skybox
+	if (!is_skybox) {
+		// Triangle #1
+		indices.push_back(0);
+		indices.push_back(1);
+		indices.push_back(3);
+		//Triangle #2
+		indices.push_back(1);
+		indices.push_back(2);
+		indices.push_back(3);
+		// Triangle #3
+		indices.push_back(4);
+		indices.push_back(5);
+		indices.push_back(7);
+		// Triangle #4
+		indices.push_back(5);
+		indices.push_back(6);
+		indices.push_back(7);
+		// Triangle #5
+		indices.push_back(8);
+		indices.push_back(9);
+		indices.push_back(11);
+		// Triangle #6
+		indices.push_back(9);
+		indices.push_back(10);
+		indices.push_back(11);
+		// Triangle #7
+		indices.push_back(12);
+		indices.push_back(13);
+		indices.push_back(15);
+		// Triangle #8
+		indices.push_back(13);
+		indices.push_back(14);
+		indices.push_back(15);
+		// Triangle #9
+		indices.push_back(16);
+		indices.push_back(17);
+		indices.push_back(19);
+		// Triangle #10
+		indices.push_back(17);
+		indices.push_back(18);
+		indices.push_back(19);
+		// Triangle #11
+		indices.push_back(23);
+		indices.push_back(22);
+		indices.push_back(20);
+		// Triangle #12
+		indices.push_back(22);
+		indices.push_back(21);
+		indices.push_back(20);
+	}
+	else {
+		// Populate the index array with triangles (REVERSED for inside-out viewing)
+		// Triangle #1 (was 0, 1, 3)
+		indices.push_back(0);
+		indices.push_back(3);
+		indices.push_back(1);
 
+		// Triangle #2 (was 1, 2, 3)
+		indices.push_back(1);
+		indices.push_back(3);
+		indices.push_back(2);
+
+		// Triangle #3 (was 4, 5, 7)
+		indices.push_back(4);
+		indices.push_back(7);
+		indices.push_back(5);
+
+		// Triangle #4 (was 5, 6, 7)
+		indices.push_back(5);
+		indices.push_back(7);
+		indices.push_back(6);
+
+		// Triangle #5 (was 8, 9, 11)
+		indices.push_back(8);
+		indices.push_back(11);
+		indices.push_back(9);
+
+		// Triangle #6 (was 9, 10, 11)
+		indices.push_back(9);
+		indices.push_back(11);
+		indices.push_back(10);
+
+		// Triangle #7 (was 12, 13, 15)
+		indices.push_back(12);
+		indices.push_back(15);
+		indices.push_back(13);
+
+		// Triangle #8 (was 13, 14, 15)
+		indices.push_back(13);
+		indices.push_back(15);
+		indices.push_back(14);
+
+		// Triangle #9 (was 16, 17, 19)
+		indices.push_back(16);
+		indices.push_back(19);
+		indices.push_back(17);
+
+		// Triangle #10 (was 17, 18, 19)
+		indices.push_back(17);
+		indices.push_back(19);
+		indices.push_back(18);
+
+		// Triangle #11 (was 23, 22, 20)
+		indices.push_back(23);
+		indices.push_back(20);
+		indices.push_back(22);
+
+		// Triangle #12 (was 22, 21, 20)
+		indices.push_back(22);
+		indices.push_back(20);
+		indices.push_back(21);
+	}
+	
 	// Vertex array descriptor
 	D3D11_BUFFER_DESC vertexbufferDesc{ 0 };
 	vertexbufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -170,9 +252,10 @@ void Cube::Render() const
 	m_dxdevice_context->IASetIndexBuffer(m_index_buffer, DXGI_FORMAT_R32_UINT, 0);
 	
 	m_dxdevice_context->PSSetShaderResources(0, 1, &m_materials[0].DiffuseTexture.TextureView);
+	m_dxdevice_context->PSSetShaderResources(1, 1, &m_materials[0].NormalTexture.TextureView);
 
 	//Update and bind material buffer
-	UpdateMaterialBuffer(vec4f(m_materials[0].AmbientColour, 1), vec4f(m_materials[0].DiffuseColour, 1), vec4f(m_materials[0].SpecularColour, 1));
+	UpdateMaterialBuffer(vec4f(m_materials[0].AmbientColour, 1), vec4f(m_materials[0].DiffuseColour, 1), vec4f(m_materials[0].SpecularColour, 1), m_cube_map_mode);
 	m_dxdevice_context->PSSetConstantBuffers(1, 1, &m_material_buffer);
 
 	// Make the drawcall

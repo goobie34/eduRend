@@ -28,4 +28,6 @@ struct MaterialBuffer
 	linalg::vec4f Ambient;
 	linalg::vec4f Diffuse;
 	linalg::vec4f Specular;
+	int CubeMapMode;
+	linalg::vec3f Pad;
 };

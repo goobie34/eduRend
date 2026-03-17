@@ -37,8 +37,10 @@ protected:
 	ID3D11Buffer* m_material_buffer = nullptr; //!< Pointer to gpu side material buffer
 	std::vector<Material> m_materials;
 	
+	int m_cube_map_mode = 0;
+
 	void InitMaterialBuffer();
-	void UpdateMaterialBuffer(vec4f ambient, vec4f diffuse, vec4f specular) const;
+	void UpdateMaterialBuffer(vec4f ambient, vec4f diffuse, vec4f specular, int cubeMapMode = 0) const;
 	void compute_TB(Vertex& v0, Vertex& v1, Vertex& v2);
 
 public:
@@ -68,6 +70,8 @@ public:
 		SAFE_RELEASE(m_index_buffer);
 		SAFE_RELEASE(m_material_buffer);
 	}
+
+	void SetCubeMapMode(int new_mode);
 };
 
 #endif

@@ -12,7 +12,7 @@ void Model::InitMaterialBuffer() {
 	ASSERT(hr = m_dxdevice->CreateBuffer(&materialBufferDesc, nullptr, &m_material_buffer));
 }
 
-void Model::UpdateMaterialBuffer(vec4f ambient, vec4f diffuse, vec4f specular) const {
+void Model::UpdateMaterialBuffer(vec4f ambient, vec4f diffuse, vec4f specular, int cubeMapMode) const {
 	// Map the resource buffer, obtain a pointer and then write our matrices to it
 	D3D11_MAPPED_SUBRESOURCE resource;
 	m_dxdevice_context->Map(m_material_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
@@ -20,6 +20,8 @@ void Model::UpdateMaterialBuffer(vec4f ambient, vec4f diffuse, vec4f specular) c
 	materialBuffer->Ambient = ambient;
 	materialBuffer->Diffuse = diffuse;
 	materialBuffer->Specular = specular;
+	materialBuffer->CubeMapMode = cubeMapMode; //only 0-3 are valid cube map modes, 0 is default (no cube mapping)
+	//materialBuffer->CubeMapMode = (cubeMapMode >= 0 && cubeMapMode < 4) ? cubeMapMode : 0; //only 0-3 are valid cube map modes, 0 is default (no cube mapping)
 	m_dxdevice_context->Unmap(m_material_buffer, 0);
 }
 
@@ -66,5 +68,11 @@ void Model::compute_TB(Vertex& v0, Vertex& v1, Vertex& v2)
 	v0.Binormal += binormal;
 	v1.Binormal += binormal;
 	v2.Binormal += binormal;
+}
+
+void Model::SetCubeMapMode(int new_mode) {
+	//only 0-3 are valid cube map modes, 0 is default (no cube mapping)
+	m_cube_map_mode = new_mode;
+	//m_cube_map_mode = (new_mode >= 0 && new_mode < 4) ? new_mode : 0; 
 }
 

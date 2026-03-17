@@ -134,7 +134,6 @@ void OBJModel::Render() const
 	// Iterate Drawcalls
 	for (auto& indexRange : m_index_ranges)
 	{
-
 		// Fetch material
 		const Material& material = m_materials[indexRange.MaterialIndex];
 
@@ -144,7 +143,7 @@ void OBJModel::Render() const
 
 		// + bind other textures here, e.g. a normal map, to appropriate slots
 
-		UpdateMaterialBuffer(vec4f(material.AmbientColour, 1), vec4f(material.DiffuseColour, 1), vec4f(material.SpecularColour, 1));
+		UpdateMaterialBuffer(vec4f(material.AmbientColour, 1), vec4f(material.DiffuseColour, 1), vec4f(material.SpecularColour, 1), m_cube_map_mode);
 		m_dxdevice_context->PSSetConstantBuffers(1, 1, &m_material_buffer);
 
 		// Make the drawcall

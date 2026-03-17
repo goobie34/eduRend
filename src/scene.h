@@ -90,14 +90,14 @@ class OurTestScene : public Scene
 	//
 	Camera* m_camera;
 
-	Texture* m_cube_texture;
+	Texture* m_cube_map_texture;
 
 	//Light sources
 	vec3f m_light_pos;
 	Model* m_light_debug_model;
 	mat4f m_light_debug_model_transform;
 
-
+	Model* m_skybox;
 	Model* m_quad;
 	Model* m_cube;
 	Model* m_sponza;
@@ -105,6 +105,7 @@ class OurTestScene : public Scene
 	mat4f m_sponza_transform;
 	mat4f m_quad_transform;
 	mat4f m_cube_transform;
+	mat4f m_skybox_transform;
 
 	//solar system models
 	Model* m_sun;

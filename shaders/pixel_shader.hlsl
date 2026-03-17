@@ -15,6 +15,14 @@ cbuffer MaterialBuffer : register(b1)
     float4 Ambient;
     float4 Diffuse;
     float4 Specular;
+    int CubeMapMode;    
+    float3 pad;
+    
+    //CubeMapMode:
+    //0 = not cube mapped
+    //1 = completely reflective surface (no diffuse texture color from texture)
+    //2 = reflective surface with diffuse texture
+    //3 = skybox
 };
 
 struct PSIn
@@ -67,20 +75,57 @@ float4 PS_main(PSIn input) : SV_Target
     float intensity = 1;
     float shininess = 64;
     
-    float4 diffuseTexture = texCube.Sample(texSampler, normalize(LightPosition.xyz));
-    //float4 diffuseTexture = texDiffuse.Sample(texSampler, input.TexCoord);
+    float4 colorTexture = float4(0, 0, 0, 0);
+
+    
+    //float4 diffuseTexture = texCube.Sample(texSampler, normalize(LightPosition.xyz));
+    if (CubeMapMode == 0)
+    {
+        colorTexture = texDiffuse.Sample(texSampler, input.TexCoord);
+    } else if (CubeMapMode == 1)
+    {
+        //vector for reflecting light in the object
+        float3 cubeMapReflection = normalize(reflect(-cameradir, normal));
+        colorTexture = texCube.Sample(texSampler, cubeMapReflection);
+        return colorTexture;
+    }
+    else if (CubeMapMode == 2)
+    {
+        //vector for reflecting light in the object
+        float3 cubeMapReflection = normalize(reflect(-cameradir, normal));
+        float4 cubeTexSample = texCube.Sample(texSampler, cubeMapReflection);
+        float4 colorTexSample = texDiffuse.Sample(texSampler, input.TexCoord);
+        colorTexture = saturate(cubeTexSample + colorTexSample);
+    }
+    else if (CubeMapMode == 3)
+    {
+        colorTexture = texCube.Sample(texSampler, normalize(-cameradir));
+        return colorTexture;
+    }
+    
     //float4 diffuseTexture = float4(normalSample, 1);
     
     float3 reflection = normalize(reflect(-lightdir, normal)); //vector for reflecting light in the object
+    //float4 diffuseTexture = texCube.Sample(texSampler, cubeMapReflection);
 
     //phong shading 
-    float ambientScale = 0.2;
-    float4 ambient = float4(diffuseTexture.xyz * ambientScale, diffuseTexture.w); //fake ambient by scaling down diffuseTexture
-    float4 diffuse = diffuseTexture * max(dot(normal, lightdir), 0);
-    //float4 diffuse = Diffuse * max(dot(normal, lightdir), 0);
+    float ambientScale = 1;
+    float4 ambient = Ambient * ambientScale;
+    float4 diffuse = Diffuse * max(dot(normal, lightdir), 0);
     float4 specular = Specular * pow(max(dot(reflection, cameradir), 0), shininess);
     float4 phong = ambient + diffuse + specular;
-    return float4(phong.xyz * intensity, phong.w);
+    float4 phong_withColor = phong * colorTexture;
+    
+    return float4(phong_withColor);
+    
+    ////phong shading 
+    //float ambientScale = 0.2;
+    //float4 ambient = float4(diffuseTexture.xyz * ambientScale, diffuseTexture.w); //fake ambient by scaling down diffuseTexture
+    //float4 diffuse = diffuseTexture * max(dot(normal, lightdir), 0);
+    ////float4 diffuse = Diffuse * max(dot(normal, lightdir), 0);
+    //float4 specular = Specular * pow(max(dot(reflection, cameradir), 0), shininess);
+    //float4 phong = ambient + diffuse + specular;
+    //return float4(phong.xyz * intensity, phong.w);
 	
     //return float4(normalize(LightPosition.xyz - input.PosWorld), 1);
     //return float4(normalize(CameraPosition.xyz), 1);

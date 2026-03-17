@@ -51,9 +51,10 @@ void OurTestScene::Init()
 	m_camera->MoveTo({ 0, 0, 5 });
 
 	//load cube map
-	m_cube_texture = new Texture();
-	LoadCubeMap(m_dxdevice, m_cube_texture);
-	
+	m_cube_map_texture = new Texture();
+	LoadCubeMap(m_dxdevice, m_cube_map_texture);
+	m_skybox = new Cube(m_dxdevice, m_dxdevice_context, true);
+	m_skybox->SetCubeMapMode(3);
 
 	//Create light sources
 	m_light_pos = { 0, 0,-4 };
@@ -66,11 +67,10 @@ void OurTestScene::Init()
 
 	//Solar system model objects
 	m_sun = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
+	m_sun->SetCubeMapMode(1);
 	//m_sun = new OBJModel("assets/carbody/carbody.obj", m_dxdevice, m_dxdevice_context);
 	m_earth = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
 	m_moon = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
-
-
 }
 
 //
@@ -181,6 +181,10 @@ void OurTestScene::Update(
 	// If no transformation is desired, an identity matrix can be obtained 
 	// via e.g. Mquad = linalg::mat4f_identity; 
 
+	//Skybox transformation, child to camera
+	m_skybox_transform = mat4f::translation(m_camera->Position()) *
+		mat4f::scaling(200);
+
 	//Solar system transformations
 	m_sun_transform = mat4f::translation(0, 10, -7) *
 		mat4f::rotation(-m_angle, 0.0f, 0.0f, 1.0f) * 
@@ -235,7 +239,7 @@ void OurTestScene::Render()
 
 	//Bind cube map to PS
 	unsigned cube_slot = 2;
-	m_dxdevice_context->PSSetShaderResources(cube_slot, 1, &m_cube_texture->TextureView);
+	m_dxdevice_context->PSSetShaderResources(cube_slot, 1, &m_cube_map_texture->TextureView);
 
 	UpdateLightCamBuffer(vec4f(m_camera->Position(), 1), vec4f(m_light_pos, 1));
 
@@ -246,6 +250,10 @@ void OurTestScene::Render()
 	//// Load matrices + the Quad's transformation to the device and render it
 	//UpdateTransformationBuffer(m_quad_transform, m_view_matrix, m_projection_matrix);
 	//m_quad->Render();
+	// 
+	// Load matrices + the skybox's transformation to the device and render it
+	UpdateTransformationBuffer(m_skybox_transform, m_view_matrix, m_projection_matrix);
+	m_skybox->Render();
 
 	// Load matrices + the cube's transformation to the device and render it
 	UpdateTransformationBuffer(m_cube_transform, m_view_matrix, m_projection_matrix);
@@ -272,6 +280,8 @@ void OurTestScene::Render()
 
 void OurTestScene::Release()
 {
+	SAFE_DELETE(m_skybox);
+
 	SAFE_DELETE(m_sun);
 	SAFE_DELETE(m_earth);
 	SAFE_DELETE(m_moon);
@@ -288,8 +298,8 @@ void OurTestScene::Release()
 	SAFE_RELEASE(m_lightcam_buffer);
 	SAFE_RELEASE(m_sampler_state);
 
-	SAFE_RELEASE(m_cube_texture->TextureView);
-	SAFE_DELETE(m_cube_texture);
+	SAFE_RELEASE(m_cube_map_texture->TextureView);
+	SAFE_DELETE(m_cube_map_texture);
 
 
 	for (auto& sampler : m_sampler_states_demo) {
@@ -406,13 +416,40 @@ void OurTestScene::LoadCubeMap(ID3D11Device* dxdevice, Texture* cube_texture) {
 	// Array of paths to cube map images
 	const char* cube_filenames[6] =
 	{
+		"assets/cubemaps/grandcanyon_cubemap/grandcanyon_posx.jpg",
+		"assets/cubemaps/grandcanyon_cubemap/grandcanyon_negx.jpg",
+		"assets/cubemaps/grandcanyon_cubemap/grandcanyon_posy.jpg",
+		"assets/cubemaps/grandcanyon_cubemap/grandcanyon_negy.jpg",
+		"assets/cubemaps/grandcanyon_cubemap/grandcanyon_posz.jpg",
+		"assets/cubemaps/grandcanyon_cubemap/grandcanyon_negz.jpg"
+	};
+	/*const char* cube_filenames[6] =
+	{
+		"assets/cubemaps/Skybox/Skybox-posx.png",
+		"assets/cubemaps/Skybox/Skybox-negx.png",
+		"assets/cubemaps/Skybox/Skybox-posy.png",
+		"assets/cubemaps/Skybox/Skybox-negy.png",
+		"assets/cubemaps/Skybox/Skybox-posz.png",
+		"assets/cubemaps/Skybox/Skybox-negz.png"
+	};*/
+	/*const char* cube_filenames[6] =
+	{
+		"assets/cubemaps/brightday/posx.png",
+		"assets/cubemaps/brightday/negx.png",
+		"assets/cubemaps/brightday/posy.png",
+		"assets/cubemaps/brightday/negy.png",
+		"assets/cubemaps/brightday/posz.png",
+		"assets/cubemaps/brightday/negz.png"
+	};*/
+	/*const char* cube_filenames[6] =
+	{
 		"assets/cubemaps/debug_cubemap/debug_posx.png",
 		"assets/cubemaps/debug_cubemap/debug_negx.png",
 		"assets/cubemaps/debug_cubemap/debug_posy.png",
 		"assets/cubemaps/debug_cubemap/debug_negy.png",
 		"assets/cubemaps/debug_cubemap/debug_posz.png",
 		"assets/cubemaps/debug_cubemap/debug_negz.png"
-	};
+	};*/
 
 	HRESULT hr = LoadCubeTextureFromFile(
 		dxdevice,
