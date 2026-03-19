@@ -77,12 +77,13 @@ float4 PS_main(PSIn input) : SV_Target
     
     float4 colorTexture = float4(0, 0, 0, 0);
 
+    float4 diffuseTexture = texCube.Sample(texSampler, normalize(LightPosition.xyz));
     
-    //float4 diffuseTexture = texCube.Sample(texSampler, normalize(LightPosition.xyz));
     if (CubeMapMode == 0)
     {
         colorTexture = texDiffuse.Sample(texSampler, input.TexCoord);
-    } else if (CubeMapMode == 1)
+    }
+    else if (CubeMapMode == 1)
     {
         //vector for reflecting light in the object
         float3 cubeMapReflection = normalize(reflect(-cameradir, normal));
@@ -95,7 +96,7 @@ float4 PS_main(PSIn input) : SV_Target
         float3 cubeMapReflection = normalize(reflect(-cameradir, normal));
         float4 cubeTexSample = texCube.Sample(texSampler, cubeMapReflection);
         float4 colorTexSample = texDiffuse.Sample(texSampler, input.TexCoord);
-        colorTexture = saturate(cubeTexSample + colorTexSample);
+        colorTexture = saturate(cubeTexSample * 0.35 + colorTexSample);
     }
     else if (CubeMapMode == 3)
     {
@@ -109,7 +110,7 @@ float4 PS_main(PSIn input) : SV_Target
     //float4 diffuseTexture = texCube.Sample(texSampler, cubeMapReflection);
 
     //phong shading 
-    float ambientScale = 1;
+    float ambientScale = 0.7;
     float4 ambient = Ambient * ambientScale;
     float4 diffuse = Diffuse * max(dot(normal, lightdir), 0);
     float4 specular = Specular * pow(max(dot(reflection, cameradir), 0), shininess);
@@ -117,6 +118,7 @@ float4 PS_main(PSIn input) : SV_Target
     float4 phong_withColor = phong * colorTexture;
     
     return float4(phong_withColor);
+    //return float4(phong);
     
     ////phong shading 
     //float ambientScale = 0.2;

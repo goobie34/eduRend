@@ -62,8 +62,10 @@ void OurTestScene::Init()
 
 	// Create objects
 	m_quad = new QuadModel(m_dxdevice, m_dxdevice_context);
-	m_cube = new Cube(m_dxdevice, m_dxdevice_context);
+	//m_cube = new Cube(m_dxdevice, m_dxdevice_context);
+	m_cube = new OBJModel("assets/hand/hand.obj", m_dxdevice, m_dxdevice_context);
 	m_sponza = new OBJModel("assets/crytek-sponza/sponza.obj", m_dxdevice, m_dxdevice_context);
+	m_sponza->SetCubeMapMode(2);
 
 	//Solar system model objects
 	m_sun = new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context);
@@ -183,7 +185,7 @@ void OurTestScene::Update(
 
 	//Skybox transformation, child to camera
 	m_skybox_transform = mat4f::translation(m_camera->Position()) *
-		mat4f::scaling(200);
+		mat4f::rotation(0,0,0) * mat4f::scaling(400);
 
 	//Solar system transformations
 	m_sun_transform = mat4f::translation(0, 10, -7) *
